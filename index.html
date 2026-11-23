@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+  :root{
+    --bg:#f4f6f3; --card:#fff; --ink:#1f2a24; --muted:#66736b; --line:#dde3dd;
+    --brand:#2f6b4f; --brand2:#e6f0ea; --accent:#c8553d; --warn:#d9932b; --ok:#2f8a57; --bad:#c8443d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.6}
+  header{background:var(--brand);color:#fff;padding:18px 20px}
+  header h1{margin:0;font-size:22px;letter-spacing:1px}
+  header p{margin:2px 0 0;opacity:.85;font-size:14px}
+  main{max-width:1080px;margin:0 auto;padding:18px 14px 60px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+  h2{font-size:18px;margin:0 0 12px;color:var(--brand)}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+  label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
+  input[type=text],select{font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:9px;min-width:150px;background:#fff}
+  button{font:inherit;border:0;border-radius:10px;padding:10px 18px;cursor:pointer;background:var(--brand);color:#fff;font-weight:600}
+  button.secondary{background:var(--brand2);color:var(--brand)}
+  button.danger{background:var(--accent)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  details summary{cursor:pointer;color:var(--brand);font-weight:600}
+  .script-text{white-space:pre-wrap;background:#fafbf9;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:8px;font-size:15px}
+  .tabs{display:flex;gap:8px;margin-bottom:12px}
+  .tab{background:#fff;color:var(--muted);border:1px solid var(--line)}
+  .tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .stage{position:relative;background:#111;border-radius:12px;overflow:hidden;aspect-ratio:16/9;max-height:62vh;margin:0 auto}
+  .stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+  .mirror{transform:scaleX(-1)}
+  .chips{position:absolute;left:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap;z-index:3}
+  .chip{background:rgba(0,0,0,.55);color:#fff;padding:4px 10px;border-radius:99px;font-size:13px}
+  .chip.ok{background:rgba(47,138,87,.9)} .chip.no{background:rgba(200,68,61,.9)}
+  .timer{position:absolute;right:10px;top:10px;background:rgba(0,0,0,.6);color:#fff;padding:4px 10px;border-radius:8px;font-variant-numeric:tabular-nums;z-index:3}
+  .rec-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#ff4b4b;margin-right:6px;animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:.2}}
+  .vol{position:absolute;left:10px;bottom:10px;width:160px;height:8px;background:rgba(255,255,255,.25);border-radius:4px;z-index:3}
+  .vol i{display:block;height:100%;width:0;background:#7be0a3;border-radius:4px;transition:width .1s}
+  .countdown{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:110px;color:#fff;font-weight:800;background:rgba(0,0,0,.35);z-index:4}
+  .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#aaa;text-align:center;padding:20px;z-index:1}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+  .status{color:var(--muted);font-size:14px}
+  .tips{font-size:13px;color:var(--muted);margin:8px 0 0;padding-left:18px}
+  .hidden{display:none!important}
+  .total{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .ring{width:130px;height:130px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;
+        background:conic-gradient(var(--brand) calc(var(--p)*1%),#e4ebe6 0)}
+  .ring div{width:104px;height:104px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring b{font-size:38px;line-height:1}
+  .ring span{font-size:12px;color:var(--muted)}
+  .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:14px}
+  .dim{border:1px solid var(--line);border-radius:12px;padding:14px}
+  .dim h3{margin:0;font-size:16px;display:flex;justify-content:space-between}
+  .bar{height:8px;background:#e8ece9;border-radius:4px;margin:8px 0}
+  .bar i{display:block;height:100%;border-radius:4px}
+  .dim ul{margin:6px 0 0;padding-left:18px;font-size:14px}
+  .flag{color:var(--bad);font-weight:700;font-size:13px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  td,th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+  .st-講到{color:var(--ok);font-weight:700} .st-部分{color:var(--warn);font-weight:700} .st-遺漏{color:var(--bad);font-weight:700}
+  .timeline{position:relative;height:56px;background:#f0f3f0;border-radius:8px;margin:8px 0 4px;overflow:hidden}
+  .tl-row{position:absolute;left:0;right:0;height:14px}
+  .tl-row i{position:absolute;top:0;height:100%;border-radius:3px;cursor:pointer}
+  .legend{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+  .issues li{cursor:pointer}
+  .issues li:hover{color:var(--brand)}
+  .transcript{white-space:pre-wrap;background:#fafbf9;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:15px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.two{grid-template-columns:1fr}}
+  .hist{display:flex;gap:6px;align-items:flex-end;height:90px;margin-top:8px}
+  .hist div{flex:1;background:var(--brand);border-radius:4px 4px 0 0;position:relative;min-width:18px}
+  .hist div span{position:absolute;top:-18px;left:0;right:0;text-align:center;font-size:11px;color:var(--ink)}
+  .err{background:#fdecea;color:#8a2a22;border-radius:10px;padding:10px 12px;margin-top:10px}
+  #playback{width:100%;border-radius:10px;background:#000;max-height:50vh}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">親善大使模擬器</h1>
+  <p>練習校園導覽：看鏡頭、說清楚、上半身入鏡加手勢、內容正確有邏輯　<small style="opacity:.7">版本 v4（11/23）</small></p>
+</header>
+
+<main>
+  <!-- Step 1 -->
+  <section class="card">
+    <h2>① 選擇導覽站與填寫資料</h2>
+    <div class="row">
+      <div><label>班級</label><input id="cls" type="text" placeholder="例：五甲"></div>
+      <div><label>姓名</label><input id="name" type="text" placeholder="你的名字"></div>
+      <div style="flex:1;min-width:200px"><label>導覽站（講稿）</label><select id="script" style="width:100%"></select></div>
+    </div>
+    <details id="scriptBox" style="margin-top:12px">
+      <summary>先看一下講稿（錄影時會自動收起）</summary>
+      <div id="scriptText" class="script-text"></div>
+    </details>
+    <div id="keyWarn" class="err hidden">老師尚未設定 Gemini API 金鑰，「內容邏輯」與「聲音清晰度」的 AI 評分將無法使用。</div>
+  </section>
+
+  <!-- Step 2 -->
+  <section class="card" id="recCard">
+    <h2>② 錄影或上傳影片</h2>
+    <div class="tabs">
+      <button class="tab active" data-mode="live">🎥 即時錄影</button>
+      <button class="tab" data-mode="upload">📁 上傳影片</button>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="placeholder" id="ph">按「開啟鏡頭」開始；請站在鏡頭前，讓<b>&nbsp;頭到腰&nbsp;</b>都入鏡</div>
+      <video id="liveVideo" class="mirror hidden" playsinline muted></video>
+      <video id="upVideo" class="hidden" playsinline></video>
+      <canvas id="overlay" class="mirror"></canvas>
+      <div class="chips" id="chips">
+        <span class="chip" id="cEye">👀 眼神</span>
+        <span class="chip" id="cBody">🧍 上半身</span>
+        <span class="chip" id="cHand">👋 手勢</span>
+        <span class="chip" id="cVoice">🔊 聲音</span>
+      </div>
+      <div class="timer hidden" id="timer"></div>
+      <div class="vol"><i id="volBar"></i></div>
+      <div class="countdown" id="countdown"></div>
+    </div>
+
+    <div class="controls" id="liveCtl">
+      <button id="btnCam">開啟鏡頭</button>
+      <button id="btnStart" disabled>開始錄影</button>
+      <button id="btnStop" class="danger" disabled>結束並評分</button>
+      <span class="status" id="liveStatus"></span>
+    </div>
+    <div class="controls hidden" id="upCtl">
+      <label class="secondary" style="display:inline-block;background:var(--brand);color:#fff;border-radius:10px;padding:10px 18px;font-weight:600;cursor:pointer;margin:0">📱 用相機錄一段<input type="file" id="fileCam" accept="video/*" capture="user" style="display:none"></label>
+      <input type="file" id="file" accept="video/*">
+      <button id="btnAnalyze" disabled>開始分析</button>
+      <button id="btnUpStop" class="danger" disabled>提前結束並評分</button>
+      <span class="status" id="upStatus"></span>
+    </div>
+    <ul class="tips">
+      <li>開啟鏡頭後先看左上角的燈號：四個都變綠色再開始錄影。</li>
+      <li>上傳影片會以正常速度播放一次來分析，影片多長就需要多久。</li>
+      <li>每次最長 <span id="maxSecTxt">180</span> 秒；建議用電腦或平板的 Chrome / Edge / Safari。</li>
+    </ul>
+  </section>
+
+  <!-- Step 3 -->
+  <section class="card hidden" id="resultCard">
+    <h2>③ 評分結果</h2>
+    <div id="busy" class="status"></div>
+    <div id="result"></div>
+  </section>
+
+  <!-- 成績總覽 -->
+  <section class="card" id="boardCard">
+    <h2>🏆 成績總覽（每位學生各關卡最佳分數）</h2>
+    <div class="row">
+      <div><label>關卡</label><select id="fStage"><option value="">全部關卡</option></select></div>
+      <div><label>班級</label><select id="fCls"><option value="">全部班級</option></select></div>
+      <div><label>搜尋姓名</label><input id="fName" type="text" placeholder="輸入姓名"></div>
+      <button class="secondary" id="btnBoard">重新整理</button>
+      <span class="status" id="boardStatus"></span>
+    </div>
+    <div id="board" style="margin-top:12px;overflow-x:auto"></div>
+  </section>
+</main>
+
+<script>
+/* ================= 設定 ================= */
+// ▼▼▼ GitHub Pages 版：把 Apps Script「網頁應用程式」網址貼在這裡（結尾是 /exec）▼▼▼
+const API_URL = 'https://script.google.com/macros/s/請貼上你的部署ID/exec';
+// ▲▲▲ 在 Apps Script 裡直接開啟時，不會用到這個網址 ▲▲▲
+
+const MP_VER = '0.10.14';
+const MP_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@' + MP_VER;
+const FACE_MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+const POSE_MODEL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
+const AUDIO_RATE = 16000;     // 送給 AI 的錄音取樣率
+const FRAME_MS = 120;         // 每 120ms 分析一張畫面（約 8 張/秒）
+
+const $ = id => document.getElementById(id);
+const S = {
+  init: null, mp: null, mode: 'live', stream: null, ctx: null, proc: null,
+  upSource: null, previewing: false, recording: false, sess: null, lastDb: -90,
+  raf: 0, lastProc: 0, wrists: [], recorder: null, recChunks: [], playbackUrl: null, upUrl: null,
+  smooth: { eye: [], body: [], hand: [] }, lastResult: null
+};
+
+/* ================= 初始化 ================= */
+/** 呼叫後端：在 Apps Script 裡用 google.script.run，在 GitHub Pages 用 fetch */
+const IN_GAS = !!(window.google && google.script && google.script.run);
+async function call(fn, ...args) {
+  if (IN_GAS) return new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args));
+  if (API_URL.includes('請貼上')) throw new Error('index.html 裡的 API_URL 還沒設定');
+  let code = ''; try { code = localStorage.getItem('amb_code') || ''; } catch (e) {}
+  const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn, args, code }) });
+  let j;
+  try { j = await r.json(); } catch (e) { throw new Error('伺服器沒有回應 JSON（請確認 Apps Script 部署的存取權是「任何人」，並已部署新版本）'); }
+  if (j.error === 'NEED_CODE') {
+    const c = prompt(code ? '存取碼錯誤，請重新輸入老師給的存取碼：' : '請輸入老師給的存取碼：');
+    if (!c) throw new Error('需要存取碼');
+    try { localStorage.setItem('amb_code', c.trim()); } catch (e) {}
+    return call(fn, ...args);
+  }
+  if (j.error) throw new Error(j.error);
+  return j.result;
+}
+
+call('getInitData').then(init).catch(e => alert('載入失敗：' + e.message));
+
+function init(d) {
+  S.init = d;
+  if (d.school) { $('title').textContent = d.school + '｜親善大使模擬器'; document.title = $('title').textContent; }
+  $('maxSecTxt').textContent = d.maxSec;
+  if (!d.hasKey) $('keyWarn').classList.remove('hidden');
+  const sel = $('script');
+  sel.innerHTML = d.scripts.map(s => `<option value="${s.id}">${esc(s.title)}${s.targetSec ? '（約 ' + s.targetSec + ' 秒）' : ''}</option>`).join('');
+  sel.onchange = showScript; showScript();
+  loadBoard();
+  try { $('cls').value = localStorage.getItem('amb_cls') || ''; $('name').value = localStorage.getItem('amb_name') || ''; } catch (e) {}
+}
+function curScript() { return S.init.scripts.find(s => String(s.id) === $('script').value); }
+function showScript() { const s = curScript(); $('scriptText').textContent = s ? s.text : '（講稿工作表沒有內容）'; }
+
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => switchMode(b.dataset.mode));
+function switchMode(m) {
+  if (S.recording) return;
+  S.mode = m;
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+  $('liveCtl').classList.toggle('hidden', m !== 'live');
+  $('upCtl').classList.toggle('hidden', m !== 'upload');
+  $('liveVideo').classList.toggle('hidden', m !== 'live' || !S.stream);
+  $('upVideo').classList.toggle('hidden', m !== 'upload' || !S.upUrl);
+  $('overlay').classList.toggle('mirror', m === 'live');
+  $('ph').classList.toggle('hidden', (m === 'live' && !!S.stream) || (m === 'upload' && !!S.upUrl));
+  $('ph').innerHTML = m === 'live' ? '按「開啟鏡頭」開始；請站在鏡頭前，讓<b>&nbsp;頭到腰&nbsp;</b>都入鏡' : '選擇一段導覽影片（頭到腰入鏡、有聲音）';
+  if (m === 'upload') stopCamera();
+  clearOverlay();
+}
+
+/* ================= 載入 AI 視覺模型 ================= */
+async function loadModels(statusEl) {
+  if (S.mp) return S.mp;
+  statusEl.textContent = '載入影像辨識模型中…（第一次約 10–30 秒）';
+  const V = await import(MP_URL + '/vision_bundle.mjs');
+  const fs = await V.FilesetResolver.forVisionTasks(MP_URL + '/wasm');
+  const make = async (Cls, opts) => {
+    try { return await Cls.createFromOptions(fs, Object.assign({}, opts, { baseOptions: { modelAssetPath: opts.model, delegate: 'GPU' } })); }
+    catch (e) { return await Cls.createFromOptions(fs, Object.assign({}, opts, { baseOptions: { modelAssetPath: opts.model, delegate: 'CPU' } })); }
+  };
+  const face = await make(V.FaceLandmarker, { model: FACE_MODEL, runningMode: 'VIDEO', numFaces: 1, outputFaceBlendshapes: true });
+  const pose = await make(V.PoseLandmarker, { model: POSE_MODEL, runningMode: 'VIDEO', numPoses: 1 });
+  S.mp = { face, pose };
+  statusEl.textContent = '';
+  return S.mp;
+}
+
+function audioCtx() {
+  if (!S.ctx) S.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (S.ctx.state === 'suspended') S.ctx.resume();
+  return S.ctx;
+}
+
+/* ================= 錄音：音量分析 + 16kHz 取樣 ================= */
+function attachAudio(sourceNode) {
+  const ctx = audioCtx();
+  if (S.proc) { S.proc.onaudioprocess = null; try { S.proc.disconnect(); } catch (e) {} }
+  const proc = ctx.createScriptProcessor(4096, 1, 1);
+  const mute = ctx.createGain(); mute.gain.value = 0;
+  sourceNode.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
+  const ratio = ctx.sampleRate / AUDIO_RATE;
+  const bufSec = 4096 / ctx.sampleRate;
+  proc.onaudioprocess = e => {
+    const d = e.inputBuffer.getChannelData(0);
+    let sum = 0, peak = 0;
+    for (let i = 0; i < d.length; i++) { const a = d[i]; sum += a * a; const b = a < 0 ? -a : a; if (b > peak) peak = b; }
+    const db = 20 * Math.log10(Math.sqrt(sum / d.length) + 1e-9);
+    S.lastDb = db;
+    const ss = S.sess;
+    if (!S.recording || !ss) return;
+    if (S.mode === 'upload' && $('upVideo').paused) return;
+    ss.audio.push({ db, peak, dur: bufSec });
+    // 降取樣到 16kHz
+    let pos = ss.rsPos; const out = [];
+    while (pos < d.length) {
+      const i0 = Math.floor(pos), end = Math.min(d.length, Math.floor(pos + ratio));
+      let s = 0, n = 0; for (let k = i0; k < end; k++) { s += d[k]; n++; }
+      out.push(n ? s / n : d[i0]); pos += ratio;
+    }
+    ss.rsPos = pos - d.length;
+    const f = new Float32Array(out); ss.pcm.push(f); ss.pcmLen += f.length;
+    for (let i = 0; i < f.length; i++) { const b = Math.abs(f[i]); if (b > ss.pcmPeak) ss.pcmPeak = b; }
+  };
+  S.proc = proc;
+}
+
+/* ================= 即時錄影 ================= */
+$('btnCam').onclick = async () => {
+  try {
+    $('btnCam').disabled = true;
+    $('liveStatus').textContent = '請允許使用鏡頭與麥克風…';
+    S.stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: false }
+    });
+    const v = $('liveVideo'); v.srcObject = S.stream; await v.play();
+    v.classList.remove('hidden'); $('ph').classList.add('hidden');
+    attachAudio(audioCtx().createMediaStreamSource(S.stream));
+    await loadModels($('liveStatus'));
+    S.previewing = true; startLoop();
+    $('btnStart').disabled = false;
+    $('liveStatus').textContent = '燈號都變綠色後，按「開始錄影」';
+  } catch (e) {
+    $('btnCam').disabled = false;
+    $('liveStatus').innerHTML = camErrorHelp(e);
+  }
+};
+
+$('btnStart').onclick = async () => {
+  if (!checkInfo()) return;
+  $('btnStart').disabled = true; $('scriptBox').open = false;
+  const cd = $('countdown'); cd.style.display = 'flex';
+  for (const n of [3, 2, 1]) { cd.textContent = n; await sleep(800); }
+  cd.style.display = 'none';
+  newSession('live');
+  // 同時錄下影片，供結果頁回放
+  S.recChunks = [];
+  const mime = ['video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4'].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+  try {
+    S.recorder = new MediaRecorder(S.stream, mime ? { mimeType: mime, videoBitsPerSecond: 1500000 } : {});
+    S.recorder.ondataavailable = e => e.data.size && S.recChunks.push(e.data);
+    S.recorder.start(1000);
+  } catch (e) { S.recorder = null; }
+  S.recording = true;
+  $('btnStop').disabled = false;
+  $('timer').classList.remove('hidden');
+  $('liveStatus').textContent = '';
+};
+$('btnStop').onclick = () => finishRecording();
+
+function camErrorHelp(e) {
+  const fp = document.permissionsPolicy || document.featurePolicy;
+  const policyBlocked = fp && fp.allowsFeature && (!fp.allowsFeature('camera') || !fp.allowsFeature('microphone'));
+  const fallback = '<br>👉 請改用上方「📁 上傳影片」分頁的「📱 用相機錄一段」按鈕（手機、平板會直接開相機錄影），錄完一樣會自動評分。';
+  if (policyBlocked) return '<span class="flag">這個網頁環境不允許直接使用鏡頭（Google 網頁的安全限制）。</span>' + fallback;
+  if (e.name === 'NotAllowedError') return '<span class="flag">鏡頭或麥克風被封鎖了。</span>請點網址列左邊的🔒或⚙圖示 →「網站設定」→ 把「攝影機」和「麥克風」改成「允許」，再重新整理頁面。' +
+    '<br>Mac 電腦另外要到「系統設定 → 隱私權與安全性 → 相機／麥克風」勾選你的瀏覽器。學校管理的 Chromebook 若仍不行，可能是管理員封鎖，請找資訊組。' + fallback;
+  if (e.name === 'NotFoundError') return '<span class="flag">找不到鏡頭或麥克風。</span>請確認裝置有接上鏡頭與麥克風。' + fallback;
+  if (e.name === 'NotReadableError') return '<span class="flag">鏡頭正被其他程式使用（例如 Meet、Zoom）。</span>請關閉後再試。' + fallback;
+  return '無法開啟鏡頭：' + esc(e.name + ' ' + e.message) + fallback;
+}
+
+function stopCamera() {
+  S.previewing = false;
+  if (S.stream) { S.stream.getTracks().forEach(t => t.stop()); S.stream = null; }
+  $('liveVideo').classList.add('hidden');
+  $('btnCam').disabled = false; $('btnStart').disabled = true; $('btnStop').disabled = true;
+}
+
+/* ================= 上傳影片 ================= */
+$('fileCam').onchange = () => loadUpload($('fileCam').files[0]);
+$('file').onchange = () => loadUpload($('file').files[0]);
+function loadUpload(f) {
+  if (!f) return;
+  if (S.upUrl) URL.revokeObjectURL(S.upUrl);
+  S.upUrl = URL.createObjectURL(f);
+  const v = $('upVideo'); v.src = S.upUrl; v.classList.remove('hidden'); $('ph').classList.add('hidden');
+  v.onloadedmetadata = () => {
+    $('upStatus').textContent = '影片長度 ' + fmt(v.duration) + (v.duration > S.init.maxSec ? `（只分析前 ${S.init.maxSec} 秒）` : '');
+    $('btnAnalyze').disabled = false;
+  };
+}
+$('btnAnalyze').onclick = async () => {
+  if (!checkInfo()) return;
+  const v = $('upVideo');
+  $('btnAnalyze').disabled = true; $('scriptBox').open = false;
+  try { await loadModels($('upStatus')); } catch (e) { $('upStatus').textContent = '模型載入失敗：' + e.message; $('btnAnalyze').disabled = false; return; }
+  const ctx = audioCtx();
+  if (!S.upSource) { S.upSource = ctx.createMediaElementSource(v); S.upSource.connect(ctx.destination); }
+  attachAudio(S.upSource);
+  v.currentTime = 0; v.muted = false;
+  newSession('upload');
+  S.recording = true; startLoop();
+  $('btnUpStop').disabled = false; $('timer').classList.remove('hidden');
+  $('upStatus').textContent = '分析中，請讓影片播完…';
+  v.onended = () => finishRecording();
+  await v.play();
+};
+$('btnUpStop').onclick = () => finishRecording();
+
+/* ================= 逐格分析 ================= */
+function newSession(mode) {
+  S.sess = { mode, t0: performance.now(), samples: [], audio: [], pcm: [], pcmLen: 0, pcmPeak: 0, rsPos: 0, lastT: -1 };
+  S.wrists = [];
+}
+function startLoop() { cancelAnimationFrame(S.raf); S.raf = requestAnimationFrame(tick); }
+
+function tick() {
+  const live = S.mode === 'live';
+  const v = live ? $('liveVideo') : $('upVideo');
+  if (!(live ? S.previewing : S.recording)) { clearOverlay(); return; }
+  const now = performance.now();
+  if (now - S.lastProc >= FRAME_MS && v.readyState >= 2 && S.mp) {
+    S.lastProc = now;
+    const t = S.recording ? (live ? (now - S.sess.t0) / 1000 : v.currentTime) : 0;
+    if (!S.recording || live || t !== S.sess.lastT) {
+      const smp = analyzeFrame(v, now, t);
+      if (S.recording && S.sess) {
+        S.sess.lastT = t;
+        if (live || !v.paused) S.sess.samples.push(smp);
+        $('timer').innerHTML = '<span class="rec-dot"></span>' + fmt(t) + ' / ' + fmt(S.init.maxSec);
+        if (t >= S.init.maxSec) { finishRecording(); return; }
+      }
+    }
+  }
+  $('volBar').style.width = Math.max(0, Math.min(100, (S.lastDb + 60) * 2)) + '%';
+  S.raf = requestAnimationFrame(tick);
+}
+
+function analyzeFrame(v, ts, t) {
+  const W = v.videoWidth, H = v.videoHeight;
+  const fr = S.mp.face.detectForVideo(v, ts);
+  const pr = S.mp.pose.detectForVideo(v, ts);
+  const smp = { t, face: false, eye: false, upper: false, gesture: false };
+
+  if (fr.faceLandmarks && fr.faceLandmarks.length) {
+    smp.face = true;
+    smp.eye = eyeContact(fr.faceLandmarks[0], fr.faceBlendshapes && fr.faceBlendshapes[0]);
+  }
+
+  let lm = null, px = null;
+  if (pr.landmarks && pr.landmarks.length) {
+    lm = pr.landmarks[0];
+    px = i => ({ x: lm[i].x * W, y: lm[i].y * H, v: lm[i].visibility == null ? 1 : lm[i].visibility, inF: lm[i].x > 0 && lm[i].x < 1 && lm[i].y > 0 && lm[i].y < 1 });
+    const ls = px(11), rs = px(12), le = px(13), re = px(14), lw = px(15), rw = px(16), nose = px(0);
+    const shouldersOk = ls.v > .6 && rs.v > .6 && ls.inF && rs.inF && nose.v > .5;
+    const elbowsOk = le.v > .5 && re.v > .5 && le.inF && re.inF;
+    smp.upper = shouldersOk && elbowsOk;
+    if (shouldersOk) {
+      const sw = Math.hypot(ls.x - rs.x, ls.y - rs.y) || 1;
+      const sy = (ls.y + rs.y) / 2, sx = (ls.x + rs.x) / 2;
+      const raisedLine = sy + 1.15 * sw;  // 大約腹部高度，手腕高於此處視為「手舉起來」
+      const hands = [lw, rw].filter(w => w.v > .5 && w.inF);
+      const raised = hands.filter(w => w.y < raisedLine);
+      const outward = raised.some(w => Math.abs(w.x - sx) > 1.0 * sw);
+      // 手腕移動量（近 0.6 秒，以肩寬為單位）
+      const ss = S;
+      let motion = 0;
+      {
+        ss.wrists.push({ ts, l: lw.v > .5 ? [lw.x / sw, lw.y / sw] : null, r: rw.v > .5 ? [rw.x / sw, rw.y / sw] : null });
+        while (ss.wrists.length && ts - ss.wrists[0].ts > 600) ss.wrists.shift();
+        for (const k of ['l', 'r']) {
+          let m = 0;
+          for (let i = 1; i < ss.wrists.length; i++) {
+            const a = ss.wrists[i - 1][k], b = ss.wrists[i][k];
+            if (a && b) m += Math.hypot(a[0] - b[0], a[1] - b[1]);
+          }
+          motion = Math.max(motion, m);
+        }
+      }
+      smp.gesture = raised.length > 0 && (motion > 0.22 || outward);
+    }
+  }
+  drawOverlay(v, lm, smp);
+  updateChips(smp);
+  return smp;
+}
+
+/** 眼神：頭部朝向 + 虹膜位置 + 眼球往下看 */
+function eyeContact(f, bs) {
+  const L = f[234], R = f[454], N = f[1], T = f[10], C = f[152];
+  const yaw = (N.x - L.x) / ((R.x - L.x) || 1e-6);
+  const pitch = (N.y - T.y) / ((C.y - T.y) || 1e-6);
+  let iris = 0.5;
+  if (f.length >= 478) {
+    const h1 = (f[468].x - f[33].x) / ((f[133].x - f[33].x) || 1e-6);
+    const h2 = (f[473].x - f[362].x) / ((f[263].x - f[362].x) || 1e-6);
+    iris = (h1 + h2) / 2;
+  }
+  let down = 0, side = 0;
+  if (bs && bs.categories) {
+    const g = n => (bs.categories.find(c => c.categoryName === n) || { score: 0 }).score;
+    down = (g('eyeLookDownLeft') + g('eyeLookDownRight')) / 2;
+    side = Math.max(g('eyeLookOutLeft'), g('eyeLookOutRight'), g('eyeLookInLeft'), g('eyeLookInRight'));
+  }
+  return yaw > 0.33 && yaw < 0.67 && pitch > 0.36 && pitch < 0.72 && iris > 0.32 && iris < 0.68 && down < 0.55 && side < 0.6;
+}
+
+function updateChips(smp) {
+  const push = (k, val) => { const a = S.smooth[k]; a.push(val ? 1 : 0); if (a.length > 10) a.shift(); return a.reduce((x, y) => x + y, 0) / a.length; };
+  const e = push('eye', smp.eye), b = push('body', smp.upper), h = push('hand', smp.gesture);
+  setChip('cEye', e > .5, '👀 眼神'); setChip('cBody', b > .5, '🧍 上半身'); setChip('cHand', h > .15, '👋 手勢');
+  setChip('cVoice', S.lastDb > -45, '🔊 聲音');
+}
+function setChip(id, ok, txt) { const c = $(id); c.className = 'chip ' + (ok ? 'ok' : 'no'); c.textContent = txt + (ok ? ' ✓' : ''); }
+
+function drawOverlay(v, lm, smp) {
+  const cv = $('overlay');
+  if (cv.width !== v.videoWidth) { cv.width = v.videoWidth; cv.height = v.videoHeight; }
+  const g = cv.getContext('2d'); g.clearRect(0, 0, cv.width, cv.height);
+  if (!lm) return;
+  const P = i => [lm[i].x * cv.width, lm[i].y * cv.height];
+  g.lineWidth = Math.max(3, cv.width / 250); g.strokeStyle = smp.gesture ? '#7be0a3' : 'rgba(255,255,255,.75)';
+  [[11, 12], [11, 13], [13, 15], [12, 14], [14, 16], [11, 23], [12, 24]].forEach(([a, b]) => {
+    if ((lm[a].visibility || 0) > .5 && (lm[b].visibility || 0) > .5) { g.beginPath(); g.moveTo(...P(a)); g.lineTo(...P(b)); g.stroke(); }
+  });
+  g.fillStyle = '#ffd166';
+  [15, 16].forEach(i => { if ((lm[i].visibility || 0) > .5) { g.beginPath(); g.arc(...P(i), g.lineWidth * 2.2, 0, 7); g.fill(); } });
+}
+function clearOverlay() { const cv = $('overlay'); cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); }
+
+/* ================= 結束、計分 ================= */
+async function finishRecording() {
+  if (!S.recording) return;
+  S.recording = false;
+  const ss = S.sess; S.sess = null;
+  $('timer').classList.add('hidden'); $('btnStop').disabled = true; $('btnUpStop').disabled = true;
+
+  if (S.mode === 'upload') {
+    const v = $('upVideo'); v.pause(); v.onended = null; $('btnAnalyze').disabled = false; $('upStatus').textContent = '';
+    S.playbackUrl = S.upUrl;
+  } else {
+    $('btnStart').disabled = false;
+    if (S.recorder && S.recorder.state !== 'inactive') {
+      await new Promise(r => { S.recorder.onstop = r; S.recorder.stop(); });
+      if (S.playbackUrl && S.playbackUrl !== S.upUrl) URL.revokeObjectURL(S.playbackUrl);
+      S.playbackUrl = S.recChunks.length ? URL.createObjectURL(new Blob(S.recChunks, { type: S.recChunks[0].type })) : null;
+    }
+  }
+
+  const dur = ss.samples.length ? ss.samples[ss.samples.length - 1].t - ss.samples[0].t : 0;
+  if (dur < 5) { alert('錄影太短（少於 5 秒），請再試一次。'); return; }
+
+  const vis = visionMetrics(ss.samples);
+  const aud = audioMetrics(ss.audio);
+  const sc = curScript();
+  const info = { name: $('name').value.trim(), cls: $('cls').value.trim(), script: sc, duration: Math.round(dur), mode: S.mode === 'live' ? '即時錄影' : '上傳影片' };
+  S.lastResult = { vis, aud, info, ai: null, wav: encodeWav(ss) };
+
+  $('resultCard').classList.remove('hidden');
+  $('resultCard').scrollIntoView({ behavior: 'smooth' });
+  renderResult();
+  requestAI();
+}
+
+function requestAI() {
+  const R = S.lastResult;
+  if (!S.init.hasKey) { R.aiError = '尚未設定 API 金鑰'; renderResult(); save(); return; }
+  $('busy').textContent = '🤖 AI 正在聽你的導覽、對照講稿評分…（約 20–60 秒）';
+  R.aiError = null;
+  call('analyzeSpeech', { scriptId: R.info.script.id, audioB64: R.wav, mime: 'audio/wav', durationSec: R.info.duration })
+    .then(res => {
+      $('busy').textContent = '';
+      if (res.ok) { R.ai = res.ai; renderResult(); save(); }
+      else { R.aiError = res.error; renderResult(); }
+    })
+    .catch(e => { $('busy').textContent = ''; R.aiError = e.message; renderResult(); });
+}
+
+function visionMetrics(smp) {
+  const n = smp.length || 1, cnt = k => smp.filter(s => s[k]).length;
+  const m = { eyeRatio: cnt('eye') / n, faceRatio: cnt('face') / n, upperRatio: cnt('upper') / n, gestureRatio: cnt('gesture') / n };
+  m.lookAway = runs(smp, s => !s.eye, 2);
+  m.outFrame = runs(smp, s => !s.upper, 2);
+  m.noGesture = runs(smp, s => !s.gesture, 10);
+  m.duration = smp.length ? smp[smp.length - 1].t : 0;
+  return m;
+}
+function runs(smp, pred, minSec) {
+  const out = []; let st = null, last = null;
+  for (const s of smp) {
+    if (pred(s)) { if (st === null) st = s.t; last = s.t; }
+    else if (st !== null) { if (s.t - st >= minSec) out.push([st, s.t]); st = null; }
+  }
+  if (st !== null && last - st >= minSec) out.push([st, last]);
+  return out;
+}
+
+function audioMetrics(a) {
+  if (!a.length) return { avgDb: -90, snr: 0, voicedRatio: 0, longPauses: [], clipRatio: 0 };
+  const dbs = a.map(x => x.db).slice().sort((x, y) => x - y);
+  const floor = dbs[Math.floor(dbs.length * 0.1)];
+  const th = Math.max(floor + 10, -52);
+  const voiced = a.filter(x => x.db > th);
+  const avgDb = voiced.length ? voiced.reduce((s, x) => s + x.db, 0) / voiced.length : -90;
+  const pauses = []; let t = 0, st = null;
+  for (const x of a) {
+    if (x.db <= th) { if (st === null) st = t; } else { if (st !== null && t - st >= 3) pauses.push([st, t]); st = null; }
+    t += x.dur;
+  }
+  return {
+    avgDb, noiseDb: floor, snr: avgDb - floor, voicedRatio: voiced.length / a.length,
+    longPauses: pauses, clipRatio: a.filter(x => x.peak > 0.98).length / a.length
+  };
+}
+
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+
+function computeScores(R) {
+  const { vis, aud, ai } = R;
+  // 1. 眼神 25：看鏡頭比例 30% → 0 分，85% 以上滿分
+  const eye = 25 * clamp((vis.eyeRatio - 0.3) / 0.55);
+
+  // 2. 聲音 25：音量 4 + 訊噪比 3 + 流暢 3（儀器量測） + AI 咬字清晰 15
+  const volPts = 4 * (aud.avgDb >= -32 && aud.avgDb <= -8 ? 1 : aud.avgDb < -32 ? clamp((aud.avgDb + 50) / 18) : clamp(1 - (aud.avgDb + 8) / 8));
+  const snrPts = 3 * clamp((aud.snr - 8) / 14);
+  const flu = 3 * clamp(1 - aud.longPauses.length * 0.34) * (aud.clipRatio > 0.05 ? 0.6 : 1);
+  const acoustic = volPts + snrPts + flu;
+  const clarity = ai ? ai.clarityScore * 1.5 : null;
+  const voice = clarity == null ? acoustic * 2.5 : acoustic + clarity;
+
+  // 3. 上半身與手勢 25：上半身 10 + 手勢 15
+  const upperPts = 10 * clamp((vis.upperRatio - 0.5) / 0.4);
+  const g = vis.gestureRatio;
+  const gestPts = g < 0.05 ? 0 : g < 0.25 ? 15 * (g - 0.05) / 0.2 : g <= 0.75 ? 15 : 12;
+  const body = upperPts + gestPts;
+
+  // 4. 內容邏輯 25：AI（涵蓋 10 + 順序 8 + 正確 7）
+  const content = ai ? ai.coverageScore + ai.orderScore + ai.accuracyScore : null;
+
+  const total = eye + voice + body + (content || 0);
+  return { eye, voice, body, content, total, volPts, snrPts, flu, upperPts, gestPts,
+    flags: { noUpper: vis.upperRatio < 0.5, noGesture: g < 0.05 } };
+}
+
+/* ================= 結果畫面 ================= */
+function renderResult() {
+  const R = S.lastResult, { vis, aud, ai, info } = R, sc = computeScores(R);
+  R.scores = sc;
+  const r1 = x => Math.round(x);
+  const pct = x => Math.round(x * 100) + '%';
+  const color = (v, max) => v / max >= .8 ? 'var(--ok)' : v / max >= .5 ? 'var(--warn)' : 'var(--bad)';
+  const bar = (v, max) => `<div class="bar"><i style="width:${v / max * 100}%;background:${color(v, max)}"></i></div>`;
+  const rate = ai ? cjkCount(ai.transcript) / Math.max(1, info.duration / 60) : null;
+  const pass = S.init.passScore;
+  const totalTxt = ai ? r1(sc.total) : '…';
+
+  let h = `<div class="total">
+    <div class="ring" style="--p:${ai ? sc.total : 0}"><div><b>${totalTxt}</b><span>/ 100</span></div></div>
+    <div>
+      <div style="font-size:20px;font-weight:700">${esc(info.name)}・${esc(info.script.title)}</div>
+      <div class="status">${info.mode}｜長度 ${fmt(info.duration)}${info.script.targetSec ? '（建議約 ' + fmt(info.script.targetSec) + '）' : ''}</div>
+      ${ai ? `<div style="margin-top:6px;font-weight:700;color:${sc.total >= pass ? 'var(--ok)' : 'var(--accent)'}">${sc.total >= pass ? '🎉 通過！可以上場導覽了' : '再練習幾次，目標 ' + pass + ' 分！'}</div>` : ''}
+      ${sc.flags.noUpper || sc.flags.noGesture ? `<div class="flag">⚠ 未達基本要求：${[sc.flags.noUpper ? '上半身沒有完整入鏡' : '', sc.flags.noGesture ? '沒有使用手勢' : ''].filter(Boolean).join('、')}</div>` : ''}
+    </div>
+  </div>`;
+  if (R.aiError) h += `<div class="err">AI 評分失敗：${esc(R.aiError)} <button class="secondary" onclick="requestAI()">重新送出</button></div>`;
+
+  h += `<div class="grid4">
+    <div class="dim"><h3>👀 眼神看鏡頭 <span>${r1(sc.eye)} / 25</span></h3>${bar(sc.eye, 25)}
+      <ul><li>看著鏡頭 ${pct(vis.eyeRatio)} 的時間（目標 85%）</li>
+      <li>視線離開鏡頭超過 2 秒：${vis.lookAway.length} 次</li>
+      ${vis.faceRatio < .8 ? '<li>臉有一段時間沒有被拍到</li>' : ''}</ul></div>
+    <div class="dim"><h3>🔊 聲音清楚 <span>${r1(sc.voice)} / 25</span></h3>${bar(sc.voice, 25)}
+      <ul><li>音量 ${aud.avgDb.toFixed(0)} dB（${aud.avgDb < -32 ? '太小聲，要更大聲' : aud.avgDb > -8 ? '太大聲或離麥克風太近' : '剛好'}）</li>
+      <li>背景噪音差距 ${aud.snr.toFixed(0)} dB ${aud.snr < 15 ? '（環境有點吵或聲音太小）' : ''}</li>
+      <li>停頓超過 3 秒：${aud.longPauses.length} 次</li>
+      ${ai ? `<li>咬字清晰度 ${ai.clarityScore} / 10・口頭禪 ${ai.fillerCount} 次</li>
+      <li>語速約 ${Math.round(rate)} 字/分（${rate < 150 ? '偏慢' : rate > 260 ? '偏快，放慢一點' : '適中'}）</li>
+      <li>${esc(ai.clarityComment)}</li>` : '<li>AI 咬字評分計算中…</li>'}</ul></div>
+    <div class="dim"><h3>🧍 上半身與手勢 <span>${r1(sc.body)} / 25</span></h3>${bar(sc.body, 25)}
+      <ul><li>上半身（頭到手肘）入鏡 ${pct(vis.upperRatio)}（${r1(sc.upperPts)}/10）</li>
+      <li>有手勢的時間 ${pct(vis.gestureRatio)}（${r1(sc.gestPts)}/15，建議 25%–75%）</li>
+      <li>超過 10 秒沒有手勢：${vis.noGesture.length} 段</li>
+      ${vis.gestureRatio > .75 ? '<li>手勢有點太多，重點處再比就好</li>' : ''}</ul></div>
+    <div class="dim"><h3>🧠 內容邏輯 <span>${ai ? sc.content + ' / 25' : '…'}</span></h3>${ai ? bar(sc.content, 25) : bar(0, 25)}
+      ${ai ? `<ul><li>重點涵蓋 ${ai.coverageScore}/10</li><li>順序與銜接 ${ai.orderScore}/8</li><li>內容正確 ${ai.accuracyScore}/7</li><li>${esc(ai.contentComment)}</li></ul>` : '<ul><li>等待 AI 對照講稿…</li></ul>'}</div>
+  </div>`;
+
+  // 時間軸
+  const D = Math.max(1, vis.duration);
+  const seg = (arr, col, top) => `<div class="tl-row" style="top:${top}px">` + arr.map(([a, b]) =>
+    `<i title="${fmt(a)}–${fmt(b)}" onclick="seek(${a})" style="left:${a / D * 100}%;width:${Math.max(.6, (b - a) / D * 100)}%;background:${col}"></i>`).join('') + '</div>';
+  const issues = []
+    .concat(vis.lookAway.map(x => [x[0], x[1], '視線離開鏡頭']))
+    .concat(vis.outFrame.map(x => [x[0], x[1], '上半身沒有完整入鏡']))
+    .concat(vis.noGesture.map(x => [x[0], x[1], '一直沒有手勢']))
+    .concat(aud.longPauses.map(x => [x[0], x[1], '停頓太久']))
+    .sort((a, b) => a[0] - b[0]);
+  h += `<h2 style="margin-top:20px">⏱ 時間軸（點一下可跳到那一段）</h2>
+    ${S.playbackUrl ? `<video id="playback" src="${S.playbackUrl}" controls playsinline></video>` : ''}
+    <div class="timeline">${seg(vis.lookAway, '#e07a5f', 2)}${seg(vis.outFrame, '#9b5de5', 15)}${seg(vis.noGesture, '#f2b134', 28)}${seg(aud.longPauses, '#4d908e', 41)}</div>
+    <div class="legend"><span><i style="background:#e07a5f"></i>視線離開</span><span><i style="background:#9b5de5"></i>沒入鏡</span><span><i style="background:#f2b134"></i>沒手勢</span><span><i style="background:#4d908e"></i>停頓</span></div>
+    ${issues.length ? `<ul class="issues">${issues.slice(0, 15).map(i => `<li onclick="seek(${i[0]})">${fmt(i[0])}–${fmt(i[1])}　${i[2]}</li>`).join('')}</ul>` : '<p>👍 沒有明顯問題片段</p>'}`;
+
+  if (ai) {
+    h += `<div class="two" style="margin-top:16px">
+      <div><h2>📋 講稿重點檢查</h2><table><tr><th>重點</th><th style="width:60px">狀態</th></tr>
+        ${ai.keyPoints.map(k => `<tr><td>${esc(k.point)}</td><td class="st-${esc(k.status)}">${esc(k.status)}</td></tr>`).join('')}</table>
+        ${ai.factErrors.length ? `<h3 style="color:var(--bad);font-size:15px;margin-top:12px">說錯的地方</h3><ul>${ai.factErrors.map(e => `<li>你說「${esc(e.said)}」→ 應為「${esc(e.correct)}」</li>`).join('')}</ul>` : ''}
+        ${ai.orderIssues.length ? `<h3 style="color:var(--warn);font-size:15px;margin-top:12px">順序與邏輯</h3><ul>${ai.orderIssues.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+      </div>
+      <div><h2>💬 教練回饋</h2>
+        <b>做得好的地方</b><ul>${ai.strengths.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+        <b>下次可以這樣做</b><ul>${ai.suggestions.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+        <div id="history"></div>
+      </div></div>
+      <details style="margin-top:14px"><summary>📝 你的逐字稿</summary><div class="transcript">${esc(ai.transcript)}</div></details>`;
+  }
+  $('result').innerHTML = h;
+  if (R.history) renderHistory(R.history);
+}
+
+function save() {
+  const R = S.lastResult, sc = R.scores, ai = R.ai, r1 = x => Math.round(x);
+  const rec = {
+    name: R.info.name, cls: R.info.cls, scriptTitle: R.info.script.title, mode: R.info.mode, duration: R.info.duration,
+    total: ai ? r1(sc.total) : '', eye: r1(sc.eye), voice: r1(sc.voice), body: r1(sc.body), content: ai ? sc.content : '',
+    eyePct: r1(R.vis.eyeRatio * 100), upperPct: r1(R.vis.upperRatio * 100), gesturePct: r1(R.vis.gestureRatio * 100),
+    avgDb: r1(R.aud.avgDb), rate: ai ? r1(cjkCount(ai.transcript) / Math.max(1, R.info.duration / 60)) : '', fillers: ai ? ai.fillerCount : '',
+    missed: ai ? ai.keyPoints.filter(k => k.status !== '講到').map(k => k.status + '：' + k.point).join('\n') : '',
+    errors: ai ? ai.factErrors.map(e => e.said + ' → ' + e.correct).join('\n') : '',
+    suggestions: ai ? ai.suggestions.join('\n') : (R.aiError || ''),
+    transcript: ai ? ai.transcript : ''
+  };
+  call('saveResult', rec).then(hist => { R.history = hist; renderHistory(hist); loadBoard(); })
+    .catch(e => { $('busy').textContent = '⚠ 成績儲存失敗：' + e.message; });
+}
+
+/* ================= 成績總覽 ================= */
+const B = { data: null, sortKey: 'best', sortDir: -1 };
+function loadBoard() {
+  $('boardStatus').textContent = '載入中…';
+  call('getBestScores')
+    .then(d => { B.data = d; fillBoardFilters(); renderBoard(); $('boardStatus').textContent = ''; })
+    .catch(e => { $('boardStatus').textContent = '載入失敗：' + e.message; });
+}
+function fillBoardFilters() {
+  const keep = (sel, opts, first) => {
+    const v = sel.value;
+    sel.innerHTML = `<option value="">${first}</option>` + opts.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
+    if (opts.includes(v)) sel.value = v;
+  };
+  keep($('fStage'), B.data.scripts, '全部關卡');
+  keep($('fCls'), [...new Set(B.data.records.map(r => r.cls))].filter(Boolean).sort(), '全部班級');
+}
+function boardSort(k) { if (B.sortKey === k) B.sortDir *= -1; else { B.sortKey = k; B.sortDir = (k === 'cls' || k === 'name') ? 1 : -1; } renderBoard(); }
+function renderBoard() {
+  if (!B.data) return;
+  const stage = $('fStage').value, cls = $('fCls').value, q = $('fName').value.trim();
+  let recs = B.data.records.filter(r => (!cls || r.cls === cls) && (!q || r.name.includes(q)));
+  const cell = v => v == null || v === '' ? '<span class="status">—</span>' : esc(v);
+  const scoreCell = v => v == null ? '<span class="status">—</span>' :
+    `<b style="color:${v >= S.init.passScore ? 'var(--ok)' : v >= 50 ? 'var(--warn)' : 'var(--bad)'}">${v}</b>`;
+  const th = (k, t) => `<th style="cursor:pointer;white-space:nowrap" onclick="boardSort('${k}')">${t}${B.sortKey === k ? (B.sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
+  const cmp = (a, b) => {
+    const x = a[B.sortKey], y = b[B.sortKey];
+    if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
+    return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'zh-Hant')) * B.sortDir;
+  };
+  let h;
+  if (stage) {
+    // 單一關卡：列出每位學生在此關卡的最佳分數與四項細分
+    if (!['cls', 'name', 'best', 'eye', 'voice', 'body', 'content', 'count'].includes(B.sortKey)) { B.sortKey = 'best'; B.sortDir = -1; }
+    recs = recs.filter(r => r.script === stage).sort(cmp);
+    if (!recs.length) { $('board').innerHTML = '<p class="status">這個關卡還沒有練習紀錄。</p>'; return; }
+    h = `<table><tr><th>#</th>${th('cls', '班級')}${th('name', '姓名')}${th('best', '最佳總分')}${th('eye', '眼神')}${th('voice', '聲音')}${th('body', '上半身手勢')}${th('content', '內容邏輯')}${th('count', '練習次數')}<th>最佳那次</th></tr>` +
+      recs.map((r, i) => `<tr><td>${i + 1}</td><td>${cell(r.cls)}</td><td>${cell(r.name)}</td><td>${scoreCell(r.best)}</td><td>${cell(r.eye)}</td><td>${cell(r.voice)}</td><td>${cell(r.body)}</td><td>${cell(r.content)}</td><td>${r.count}</td><td>${cell(r.time)}</td></tr>`).join('') + '</table>';
+    const passN = recs.filter(r => r.best >= S.init.passScore).length;
+    h = `<p class="status">${recs.length} 位學生練習過，${passN} 位達 ${S.init.passScore} 分</p>` + h;
+  } else {
+    // 全部關卡：每位學生一列、每個關卡一欄
+    const stages = B.data.scripts, people = {};
+    recs.forEach(r => {
+      const k = r.cls + '|' + r.name;
+      const p = people[k] || (people[k] = { cls: r.cls, name: r.name, s: {} });
+      p.s[r.script] = r.best;
+    });
+    let list = Object.values(people).map(p => {
+      const vals = stages.map(s => p.s[s]).filter(v => v != null);
+      p.done = vals.length; p.passed = vals.filter(v => v >= S.init.passScore).length;
+      p.avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+      stages.forEach((s, i) => p['s' + i] = p.s[s] == null ? null : p.s[s]);
+      return p;
+    });
+    if (!(['cls', 'name', 'passed', 'avg'].includes(B.sortKey) || /^s\d+$/.test(B.sortKey))) { B.sortKey = 'avg'; B.sortDir = -1; }
+    list = list.sort(cmp);
+    if (!list.length) { $('board').innerHTML = '<p class="status">還沒有練習紀錄。</p>'; return; }
+    h = `<table><tr>${th('cls', '班級')}${th('name', '姓名')}${stages.map((s, i) => th('s' + i, esc(s))).join('')}${th('passed', '通過關數')}${th('avg', '平均')}</tr>` +
+      list.map(p => `<tr><td>${cell(p.cls)}</td><td>${cell(p.name)}</td>${stages.map((s, i) => `<td>${scoreCell(p['s' + i])}</td>`).join('')}<td>${p.passed} / ${stages.length}</td><td>${cell(p.avg)}</td></tr>`).join('') + '</table>';
+  }
+  $('board').innerHTML = h;
+}
+['fStage', 'fCls'].forEach(id => $(id).onchange = renderBoard);
+$('fName').oninput = renderBoard;
+$('btnBoard').onclick = loadBoard;
+function renderHistory(hist) {
+  const el = $('history'); if (!el || !hist || hist.length < 2) return;
+  el.innerHTML = `<b>我的進步（最近 ${hist.length} 次）</b><div class="hist">${hist.map(x =>
+    `<div style="height:${Math.max(4, Number(x.total) || 0)}%" title="${esc(x.time)} ${esc(x.script)}"><span>${x.total}</span></div>`).join('')}</div>`;
+}
+
+/* ================= 工具 ================= */
+function encodeWav(ss) {
+  const n = ss.pcmLen, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, AUDIO_RATE, true); v.setUint32(28, AUDIO_RATE * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, 'data'); v.setUint32(40, n * 2, true);
+  const gain = ss.pcmPeak > 0 ? Math.min(8, 0.9 / ss.pcmPeak) : 1;  // 小聲錄音放大，讓 AI 聽得清楚
+  let o = 44;
+  for (const c of ss.pcm) for (let i = 0; i < c.length; i++) {
+    const s = Math.max(-1, Math.min(1, c[i] * gain)); v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true); o += 2;
+  }
+  const u8 = new Uint8Array(buf); let bin = '';
+  for (let i = 0; i < u8.length; i += 0x8000) bin += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+function checkInfo() {
+  if (!$('name').value.trim()) { alert('請先填寫姓名'); $('name').focus(); return false; }
+  if (!curScript()) { alert('講稿工作表沒有內容，請老師先貼上講稿'); return false; }
+  try { localStorage.setItem('amb_cls', $('cls').value.trim()); localStorage.setItem('amb_name', $('name').value.trim()); } catch (e) {}
+  return true;
+}
+function seek(t) { const p = $('playback'); if (p) { p.currentTime = Math.max(0, t - 0.5); p.play(); p.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
+function cjkCount(s) { return (String(s || '').replace(/（[^）]*）/g, '').match(/[一-鿿]/g) || []).length; }
+function fmt(s) { s = Math.max(0, Math.round(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
